@@ -6,17 +6,30 @@
 
 .global main
 
+@Initialize registers to starting values
+@r2 = coinInput
+  mov r2, #0
+@r3 = used for comparisons
+@r4 = inputTotal
+@r5
+@r6
+@r7
+@r8
+@r9
+
 @Display a welcome message and instructions
 display:
 
   ldr r0, =welcomeMessage
   bl printf
 
-@Read coin input
-input:
+@Display input instructions
+inputMessage:
   ldr r0, =instructionMessage
   bl printf
 
+@Read coin input
+input:
   ldr r0, =coinInputPattern @set up to read in one character
   ldr r1, =coinInput        @load r1 with the address of where input value will be stored
   bl scanf                  @scan the keyboard
@@ -44,24 +57,50 @@ inputValidate:
   be quarter                @if equal to Q, branch to quarter
 
 @Print invalid input message, branch back to input
-invalid:                  @if reach this label, coinInput is invalid
+invalid:                    @if reach this label, coinInput is invalid
   ldr r0, =invalidInputMessage
   bl printf
   b input
 
 @Update inputTotal and Display
 bill:
-
+  add r4, r4, #100            @add 100 cents to r4 which contains inputTotal
+  ldr r0, =inputTotalDisplay
+  mov r1, r4
+  bl printf
+  b selection
 
 dime:
+  add r4, r4, #10             @add 10 cents to r4 which contains inputTotal
+  ldr r0, =inputTotalDisplay
+  mov r1, r4
+  bl printf
+  b totalCheck
 
 nickel:
+  add r4, r4, #5              @add 5 cents to r4 which contains inputTotal
+  ldr r0, =inputTotalDisplay
+  mov r1, r4
+  bl printf
+  b totalCheck
 
 quarter:
+  add r4, r4, #25             @add 25 cents to r4 which contains inputTotal
+  ldr r0, =inputTotalDisplay
+  mov r1, r4
+  bl printf
+  b totalCheck
 
+@Check if input amount >= 55 cents, if so make a drink selection
+totalCheck:
+  cmp r4, #55                 @Compare r4 which contains inputTotal to 55 cents
+  blt input                   @if less than 55, branch to input again
 
+  b selection
 
-  bill:
+@Allow user to make a drink selection
+selection:
+  
 
 @*******************
 @ End of code. Force the exit and return control to OS
@@ -91,6 +130,12 @@ myexit:
 
   .balign 4
   printTestCharacter: .asciz "You read in: %c \n"
+
+  .balign 4
+  inputTotal: .asciz "%d\n"
+
+  .balign 4
+  inputTotalDisplay: .asciz "Total is %d cents\n"
 
 //Lab 4
 main:

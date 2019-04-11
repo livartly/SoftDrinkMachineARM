@@ -1,0 +1,98 @@
+@SoftDrinkMachineARM
+@ Use these command to assemble, link and run this program
+@    as -o SoftDrinkMachineARM.o SoftDrinkMachineARM.s
+@    gcc -o SoftDrinkMachineARM SoftDrinkMachineARM.o
+@    ./SoftDrinkMachineARM ;echo $?
+
+.global main @ Have to use main because of C library uses.
+
+main:
+@*******************
+print_Even:
+@*******************
+@   Print each even number from 1 to 25, print sum of even numbers
+even:
+
+    ldr r0, =num
+    mov r1, #1
+    bl printf
+    ldr r0, =num
+    mov r1, #2
+    bl printf
+
+    mov r8, #0       /* r8 ← 0 */
+    mov r9, #2       /* r9 ← 1 */
+
+loop:
+    cmp r9, #25      /* compare r9 and 25 */
+    bgt printeven    /* branch if r9 > 25 to end */
+    add r8, r8, r9   /* r8 ← r8 + r9 */
+    add r9, r9, #2   /* r9 ← r9 + 2 */
+    ldr r0, =num
+    mov r1, r9
+    bl printf
+
+    b loop
+
+printeven:
+    ldr r0, =evensum
+    mov r1, r8
+    bl printf
+
+@*******************
+print_Odd:
+@*******************
+@   Print each odd number from 1 to 25, print sum of odd numbers
+odd:
+    ldr r0, =num
+    mov r1, #1
+    bl printf
+
+    mov r4, #0       /* r4 ← 0 */
+    mov r5, #1       /* r5 ← 1 */
+
+loop2:
+    cmp r5, #25      /* compare r5 and 25 */
+    bgt printodd    /* branch if r5 > 25 to end */
+    add r4, r4, r5   /* r4 ← r4 + r5 */
+    add r5, r5, #2   /* r5 ← r5 + 2 */
+    ldr r0, =num
+    mov r1, r5
+    bl printf
+    b loop2
+
+printodd:
+    ldr r0, =oddsum
+    mov r1, r4
+    bl printf
+
+@*******************
+print_Sum:
+@*******************
+@   Print sum of both numbers
+
+    add r7, r4, r8
+    ldr r0, =bothsum
+    mov r1, r7
+    bl printf
+
+@*******************
+myexit:
+@*******************
+@ End of my code. Force the exit and return control to OS
+
+   mov r7, #0x01 @SVC call to exit
+   svc 0         @Make the system call.
+
+.data
+.balign 4
+num: .asciz "%d\n"
+
+.balign 4
+evensum: .asciz "Sum of even numbers: %d\n"
+
+.balign 4
+oddsum: .asciz "Sum of odd numbers: %d\n"
+
+.balign 4
+bothsum: .asciz "Sum of all numbers: %d\n"

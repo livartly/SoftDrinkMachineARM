@@ -4,8 +4,95 @@
 @    gcc -o SoftDrinkMachineARM SoftDrinkMachineARM.o
 @    ./SoftDrinkMachineARM ;echo $?
 
-.global main @ Have to use main because of C library uses.
+.global main
 
+@Display a welcome message and instructions
+display:
+
+  ldr r0, =welcomeMessage
+  bl printf
+
+@Read coin input
+input:
+  ldr r0, =instructionMessage
+  bl printf
+
+  ldr r0, =coinInputPattern @set up to read in one character
+  ldr r1, =coinInput        @load r1 with the address of where input value will be stored
+  bl scanf                  @scan the keyboard
+
+@Test print coinInput
+printTest:
+  ldr r2, =coinInput        @ Put the address of the input value into r2
+  ldr r1,[r2]               @ Read the contents of charInput and store in r1 so that it can be printed
+  ldr r0, =printTestCharacter
+  bl printf
+
+@Verify coin input is valid
+inputValidate:
+  ldr r3, [r2]              @r2 contains coinInput, put address of input into r3
+  cmp r3, #66               @Compare coinInput to ascii value of B
+  be bill                   @if equal to B, branch to bill
+
+  cmp r3, #68               @Compare coinInput to ascii value of D
+  be dime                   @if equal to D, branch to dime
+
+  cmp r3, #78               @Compare coinInput to ascii value of N
+  be nickel                 @if equal to N, branch to nickel
+
+  cmp r3, #81               @Compare coinInput to ascii value of Q
+  be quarter                @if equal to Q, branch to quarter
+
+@Print invalid input message, branch back to input
+invalid:                  @if reach this label, coinInput is invalid
+  ldr r0, =invalidInputMessage
+  bl printf
+  b input
+
+@Update inputTotal and Display
+bill:
+
+
+dime:
+
+nickel:
+
+quarter:
+
+
+
+  bill:
+
+@*******************
+@ End of code. Force the exit and return control to OS
+myexit:
+
+  mov r7, #0x01 @SVC call to exit
+  svc 0         @Make the system call.
+
+@Data
+.data
+
+@Printed Messages
+  .balign 4
+  welcomeMessage: .asciz "Welcome to Liv's soft drink vending machine. Cost of Coke, Sprite, Dr. Pepper, Diet Coke, and Mellow Yellow is 55 cents. Please enter N, D, Q, or B to input a nickel, dime, quarter, or 1 dollar bill. \n"
+
+  instructionMessage: .asciz "Enter money nickel (N), dime (D), quarter (Q), and one dollar bill (B).\n"
+
+  invalidInputMessage: .asciz "You have entered an invalid value. \n"
+
+
+@Stored Values
+  .balign 4
+  coinInputPattern:.asciz "%s" @ string format for read- works with character too
+
+  .balign 4
+  cointInput: .word 0 @ Location used to store the user input.
+
+  .balign 4
+  printTestCharacter: .asciz "You read in: %c \n"
+
+//Lab 4
 main:
 @*******************
 print_Even:

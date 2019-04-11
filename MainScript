@@ -23,12 +23,10 @@ display:
   ldr r0, =welcomeMessage
   bl printf
 
-@Display input instructions
-inputMessage:
-  ldr r0, =instructionMessage
-  bl printf
+@Display input instructions and read coin input
+ldr r0, =instructionMessage
+bl printf
 
-@Read coin input
 input:
   ldr r0, =coinInputPattern @set up to read in one character
   ldr r1, =coinInput        @load r1 with the address of where input value will be stored
@@ -100,7 +98,9 @@ totalCheck:
 
 @Allow user to make a drink selection
 selection:
-  
+  ldr r0, =selectionMessage
+  bl printf
+
 
 @*******************
 @ End of code. Force the exit and return control to OS
@@ -119,6 +119,8 @@ myexit:
   instructionMessage: .asciz "Enter money nickel (N), dime (D), quarter (Q), and one dollar bill (B).\n"
 
   invalidInputMessage: .asciz "You have entered an invalid value. \n"
+
+  selectionMessage: .asciz "Make selection: (C) Coke, (S) Sprite, (P) Dr. Pepper, (D) Diet Coke, or (M) Mellow Yellow (X) to cancel and return all money. \n"
 
 
 @Stored Values

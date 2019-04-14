@@ -29,7 +29,10 @@ main:
   mov r8,#5                 
 
 @r9=mInventory used for mellow yellow inventory, set mInventory=5
-  mov r9,#5                
+  mov r9,#5
+
+@r10=mInventory used for mellow yellow inventory, set mInventory=5
+  mov r10,#25              
 
 @Display a welcome message and instructions
 display:
@@ -62,6 +65,9 @@ inputValidate:
 
   cmp r3, #81               @Compare coinInput to ascii value of Q
   beq quarter                @if equal to Q, branch to quarter
+
+  cmp r3, #73               @Compare coinInput to ascii value of I
+  beq drinkInventory         @if equal to I, branch to drinkInventory
 
 @Print invalid input message, branch back to input
 invalid:                    @if reach this label, coinInput is invalid
@@ -107,6 +113,8 @@ totalCheck:
 
 @Allow user to make a drink selection
 selection:
+  cmp r10, #1
+  blt noDrinksForYou
   ldr r0, =selectionMessage   @print selection options
   bl printf
 
@@ -150,7 +158,7 @@ coke:
   ldr r0, =cokeSelect
   bl printf
   
-  ldr r0, =confirmationMessage   @print confirmation message
+  ldr r0, =confirmationMessageCoke   @print confirmation message
   bl printf
 
   ldr r0, =confirmInputPattern  @set up to read in one character
@@ -172,35 +180,249 @@ invalid3:                    @if reach this label, confirmInput is invalid
   bl printf
   b selection
 
+@Minus 1 coke from inventory
+@Check if inputTotal > 55 cents, if it is minus 55 from inputTotal
 dispenseCoke:
+  sub r5, #1
+  cmp r4, #55 
+  bgt makeChangeCoke
+  mov r4, #0
+  b goodbyeCoke
+
+makeChangeCoke:
+  sub r4, r4, #55
+
+@Print dispense message and give change to user
+goodbyeCoke:
   ldr r0, =dispenseCokeMessage
   mov r1, r4  
   bl printf
-  
+  mov r4, #0 @reset inputTotal to 0
+  sub r10, #1 @minus 1 from totalInventory
+  b input    @Bring user back to input instruction start
 
+@Check if drink inventory > 0, if drink in stock, print selection, read in confirmation
 sprite:
+  cmp r6, #1
+  bLt outOfStock
   ldr r0, =spriteSelect
   bl printf
+  
+  ldr r0, =confirmationMessageSprite   @print confirmation message
+  bl printf
 
+  ldr r0, =confirmInputPattern  @set up to read in one character
+  ldr r1, =confirmInput         @load r1 with the address of where input value will be stored
+  bl scanf                      @scan the keyboard
+
+  ldr r2, =confirmInput     @ Put the address of the input value into r2  
+  ldr r3, [r2]              @r2 contains confirmInput, put address of input into r3
+  
+  cmp r3, #89               @Compare confirmInput to ascii value Y
+  beq dispenseSprite          @if equal to Y, branch to dispenseCoke
+
+  cmp r3, #78               @Compare confirmInput to ascii value N
+  beq selection             @if equal to N, branch to selection
+  b invalid3
+
+@Minus 1 sprite from inventory
+@Check if inputTotal > 55 cents, if it is minus 55 from inputTotal
+dispenseSprite:
+  sub r6, #1
+  cmp r4, #55 
+  bgt makeChangeSprite
+  mov r4, #0
+  b goodbyeSprite
+
+makeChangeSprite:
+  sub r4, r4, #55
+
+@Print dispense message and give change to user
+goodbyeSprite:
+  ldr r0, =dispenseSpriteMessage
+  mov r1, r4  
+  bl printf
+  mov r4, #0 @reset inputTotal to 0
+  sub r10, #1 @minus 1 from totalInventory
+  b input    @Bring user back to input instruction start
+
+@Check if drink inventory > 0, if drink in stock, print selection, read in confirmation
 drpepper:
+  cmp r7, #1
+  bLt outOfStock
   ldr r0, =drpepperSelect
   bl printf
+  
+  ldr r0, =confirmationMessageDrPepper   @print confirmation message
+  bl printf
 
+  ldr r0, =confirmInputPattern  @set up to read in one character
+  ldr r1, =confirmInput         @load r1 with the address of where input value will be stored
+  bl scanf                      @scan the keyboard
+
+  ldr r2, =confirmInput     @ Put the address of the input value into r2  
+  ldr r3, [r2]              @r2 contains confirmInput, put address of input into r3
+  
+  cmp r3, #89               @Compare confirmInput to ascii value Y
+  beq dispenseDrPepper          @if equal to Y, branch to dispenseCoke
+
+  cmp r3, #78               @Compare confirmInput to ascii value N
+  beq selection             @if equal to N, branch to selection
+  b invalid
+
+@Minus 1 drpepper from inventory
+@Check if inputTotal > 55 cents, if it is minus 55 from inputTotal
+dispenseDrPepper:
+  sub r7, #1
+  cmp r4, #55 
+  bgt makeChangeDrPepper
+  mov r4, #0
+  b goodbyeDrPepper
+
+makeChangeDrPepper:
+  sub r4, r4, #55
+
+@Print dispense message and give change to user
+goodbyeDrPepper:
+  ldr r0, =dispenseDrPepperMessage
+  mov r1, r4  
+  bl printf
+  mov r4, #0 @reset inputTotal to 0
+  sub r10, #1 @minus 1 from totalInventory
+  b input    @Bring user back to input instruction start
+
+@Check if drink inventory > 0, if drink in stock, print selection, read in confirmation
 dietcoke:
+  cmp r8, #1
+  bLt outOfStock
   ldr r0, =dietcokeSelect
   bl printf
-
-mellowyellow:
-  ldr r0, =mellowyellowSelect
+  
+  ldr r0, =confirmationMessageDietCoke   @print confirmation message
   bl printf
 
+  ldr r0, =confirmInputPattern  @set up to read in one character
+  ldr r1, =confirmInput         @load r1 with the address of where input value will be stored
+  bl scanf                      @scan the keyboard
+
+  ldr r2, =confirmInput     @ Put the address of the input value into r2  
+  ldr r3, [r2]              @r2 contains confirmInput, put address of input into r3
+  
+  cmp r3, #89               @Compare confirmInput to ascii value Y
+  beq dispenseDietCoke          @if equal to Y, branch to dispenseCoke
+
+  cmp r3, #78               @Compare confirmInput to ascii value N
+  beq selection             @if equal to N, branch to selection
+  b invalid3
+
+@Minus 1 dietcoke from inventory
+@Check if inputTotal > 55 cents, if it is minus 55 from inputTotal
+dispenseDietCoke:
+  sub r8, #1
+  cmp r4, #55 
+  bgt makeChangeDietCoke
+  mov r4, #0
+  b goodbyeDietCoke
+
+makeChangeDietCoke:
+  sub r4, r4, #55
+
+@Print dispense message and give change to user
+goodbyeDietCoke:
+  ldr r0, =dispenseDietCokeMessage
+  mov r1, r4  
+  bl printf
+  mov r4, #0 @reset inputTotal to 0
+  sub r10, #1 @minus 1 from totalInventory
+  b input    @Bring user back to input instruction start
+
+@Check if drink inventory > 0, if drink in stock, print selection, read in confirmation
+mellowyellow:
+  cmp r9, #1
+  bLt outOfStock
+  ldr r0, =mellowyellowSelect
+  bl printf
+  
+  ldr r0, =confirmationMessageMellowYellow   @print confirmation message
+  bl printf
+
+  ldr r0, =confirmInputPattern  @set up to read in one character
+  ldr r1, =confirmInput         @load r1 with the address of where input value will be stored
+  bl scanf                      @scan the keyboard
+
+  ldr r2, =confirmInput     @ Put the address of the input value into r2  
+  ldr r3, [r2]              @r2 contains confirmInput, put address of input into r3
+  
+  cmp r3, #89               @Compare confirmInput to ascii value Y
+  beq dispenseMellowYellow          @if equal to Y, branch to dispenseCoke
+
+  cmp r3, #78               @Compare confirmInput to ascii value N
+  beq selection             @if equal to N, branch to selection
+  b invalid3
+
+@Minus 1 mellowyellow from inventory
+@Check if inputTotal > 55 cents, if it is minus 55 from inputTotal
+dispenseMellowYellow:
+  sub r9, #1
+  cmp r4, #55 
+  bgt makeChangeMellowYellow
+  mov r4, #0
+  b goodbyeMellowYellow
+
+makeChangeMellowYellow:
+  sub r4, r4, #55
+
+@Print dispense message and give change to user
+goodbyeMellowYellow:
+  ldr r0, =dispenseMellowYellowMessage
+  mov r1, r4  
+  bl printf
+  mov r4, #0 @reset inputTotal to 0
+  sub r10, #1 @minus 1 from totalInventory
+  b input    @Bring user back to input instruction start
+
+drinkInventory:
+  ldr r0, =cokeInventory
+  mov r1, r5
+  bl printf
+
+  ldr r0, =spriteInventory
+  mov r1, r6
+  bl printf
+
+  ldr r0, =drpepperInventory
+  mov r1, r7
+  bl printf
+
+  ldr r0, =dietcokeInventory
+  mov r1, r8
+  bl printf
+
+  ldr r0, =mellowyellowInventory
+  mov r1, r9
+  bl printf
+
+  ldr r0, =totalInventory
+  mov r1, r10
+  bl printf
+
+  b input
+
 cancel:
-  b selection
+  ldr r0, =cancelMessage
+  mov r1, r4  
+  bl printf
+  mov r4, #0
+  b input
 
 outOfStock:
   ldr r0, =outOfStockMessage
   bl printf
+  b selection
 
+noDrinksForYou:
+  ldr r0, =noDrinks
+  bl printf
 
 @*******************
 @ End of code. Force the exit and return control to OS
@@ -244,7 +466,22 @@ myexit:
   outOfStockMessage: .asciz "Drink out of stock, choose another \n"
 
   .balign 4
-  confirmationMessage: .asciz "Are you sure you want a Coke (Y/N)\n"
+  noDrinks: .asciz "Out of all drinks sorryyyyyyy.\n"
+
+  .balign 4
+  confirmationMessageCoke: .asciz "Are you sure you want a Coke (Y/N)\n"
+
+  .balign 4
+  confirmationMessageSprite: .asciz "Are you sure you want a Sprite (Y/N)\n"
+
+  .balign 4
+  confirmationMessageDrPepper: .asciz "Are you sure you want a Dr.Pepper (Y/N)\n"
+
+  .balign 4
+  confirmationMessageDietCoke: .asciz "Are you sure you want a Diet Coke (Y/N)\n"
+
+  .balign 4
+  confirmationMessageMellowYellow: .asciz "Are you sure you want a Mellow Yellow (Y/N)\n"
 
 @Stored Values
   .balign 4
@@ -276,3 +513,36 @@ myexit:
 
   .balign 4
   dispenseCokeMessage: .asciz "A Coke has been dispensed with %d cents change\n"
+
+  .balign 4
+  dispenseSpriteMessage: .asciz "A Sprite has been dispensed with %d cents change\n"
+
+  .balign 4
+  dispenseDrPepperMessage: .asciz "A Dr. Pepper has been dispensed with %d cents change\n"
+
+  .balign 4
+  dispenseDietCokeMessage: .asciz "A Diet Coke has been dispensed with %d cents change\n"
+
+  .balign 4
+  dispenseMellowYellowMessage: .asciz "A Mellow Yellow has been dispensed with %d cents change\n"
+
+  .balign 4
+  cancelMessage: .asciz "Canceling transaction... returned %d cents change\n"
+
+  .balign 4
+  cokeInventory: .asciz "%d cokes\n"
+
+  .balign 4
+  spriteInventory: .asciz "%d sprites\n"
+
+  .balign 4
+  drpepperInventory: .asciz "%d dr. peppers\n"
+
+  .balign 4
+  dietcokeInventory: .asciz "%d diet cokes\n"
+
+  .balign 4
+  mellowyellowInventory: .asciz "%d mellow yellows\n"
+
+  .balign 4
+  totalInventory: .asciz "%d total drinks\n"
